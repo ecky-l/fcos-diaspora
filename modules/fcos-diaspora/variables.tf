@@ -37,3 +37,8 @@ variable "mac_address" {
   type = string
   description = "MAC address of the node for matchbox selection"
 }
+
+variable "postgres_password" {
+  type = string
+  description = "postgresql password"
+}

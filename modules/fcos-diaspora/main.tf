@@ -30,7 +30,10 @@ data "ct_config" "diaspora_ignition" {
   content = file("${path.module}/templates/main.yaml")
 
   snippets = concat(
-  var.snippets
+          var.snippets,
+          templatefile("${path.module}/templates/postgresql.yaml", {
+            postgres_password = var.postgres_password
+          })
   )
 }
 
