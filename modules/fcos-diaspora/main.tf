@@ -32,10 +32,13 @@ data "ct_config" "diaspora_ignition" {
   snippets = concat(
           var.snippets,
   [
-    templatefile("${path.module}/templates/postgresql.yaml", {
+    templatefile("${path.module}/templates/diaspora-config.yaml", {
       postgres_password = var.postgres_password
+      diaspora_url = var.diaspora_url
     }),
-    file("${path.module}/templates/redis.yaml")
+    templatefile("${path.module}/templates/diaspora-pod.yaml", {
+      postgres_password = var.postgres_password
+    })
   ]
   )
 }

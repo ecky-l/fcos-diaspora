@@ -54,4 +54,5 @@ module "vb_diaspora" {
   mac_address = "08:00:27:0C:E1:06"
 
   postgres_password = "diaspora"
+  diaspora_url = "https://diasp.e-lehmann.de"
 }

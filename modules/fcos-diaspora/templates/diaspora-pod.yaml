@@ -1,0 +1,71 @@
+---
+variant: fcos
+version: 1.1.0
+storage:
+  directories:
+    - path: /var/mnt/data/diaspora/uploads
+      mode: 0755
+    - path: /var/mnt/data/postgresql
+      mode: 0755
+    - path: /var/mnt/data/redis
+      mode: 0755
+  files:
+    - path: /usr/local/bin/install-diaspora.sh
+      mode: 0755
+      overwrite: true
+      contents:
+        inline: |
+          #!/bin/bash -e
+          if podman pod exists diaspora; then
+              podman pod rm -f diaspora
+          fi
+          podman pod create --name diaspora
+          podman create \
+                --pod diaspora \
+                --pull always \
+                --name postgresql \
+                -e POSTGRES_USER=diaspora \
+                -e POSTGRES_PASSWORD=${postgres_password} \
+                -e POSTGRES_DB=diaspora_production \
+                -v /var/mnt/data/postgresql:/var/lib/postgresql/data:Z \
+                postgres:10-alpine
+          podman create \
+                --pod diaspora \
+                --pull always \
+                --name redis \
+                -v /var/mnt/data/redis:/data:Z \
+                redis redis-server --appendonly yes
+          podman create \
+                --pod diaspora \
+                --pull always \
+                --name diaspora-ct \
+                -v /var/mnt/data/diaspora/uploads:/home/diaspora/diaspora/public/uploads:Z \
+                -v /var/local/etc/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
+                -v /var/local/etc/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
+                koehn/diaspora
+          cd /etc/systemd/system/ && podman generate systemd -fn diaspora ; cd -
+          systemctl daemon-reload
+          systemctl enable pod-diaspora
+          systemctl start pod-diaspora
+          mkdir -p /var/log/provision-done
+          touch /var/log/provision-done/install-diaspora
+systemd:
+  units:
+    - name: install-diaspora.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Install diaspora services pod
+        After=network-online.target
+        Wants=network-online.target
+        Before=systemd-user-sessions.service
+        ConditionPathExists=!/var/log/provision-done/install-diaspora
+        [Service]
+        Type=oneshot
+        RemainAfterExit=true
+        ExecStart=/usr/local/bin/install-diaspora.sh
+        StandardOutput=kmsg+console
+        StandardError=kmsg+console
+        [Install]
+        WantedBy=multi-user.target
+...

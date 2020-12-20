@@ -1,0 +1,78 @@
+---
+variant: fcos
+version: 1.1.0
+storage:
+  directories:
+    - path: /var/local/etc/diaspora
+      mode: 0755
+  files:
+    - path: /var/local/etc/diaspora/database.yml
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          postgresql: &postgresql
+            adapter: postgresql
+            host: localhost
+            port: 5432
+            username: diaspora
+            password: ${postgres_password}
+            encoding: unicode
+
+          mysql: &mysql
+            adapter: mysql2
+            host: "localhost"
+            port: 3306
+            username: "root"
+            password: ""
+          #  socket: /tmp/mysql.sock
+            encoding: utf8mb4
+            collation: utf8mb4_bin
+
+
+          # Comment the postgresql line and uncomment the mysql line
+          # if you want to use mysql
+          common: &common
+            # Choose one of the following
+            <<: *postgresql
+            #<<: *mysql
+
+            # Should match environment.sidekiq.concurrency
+            #pool: 25
+
+          ##################################################
+          #### CONFIGURE ABOVE #############################
+          ##################################################
+
+          # Normally you don't need to touch anything here
+
+          combined: &combined
+            <<: *common
+          development:
+            <<: *combined
+            database: diaspora_development
+          production:
+            <<: *combined
+            database: diaspora_production
+          test:
+            <<: *combined
+            database: "diaspora_test"
+          integration1:
+            <<: *combined
+            database: diaspora_integration1
+          integration2:
+            <<: *combined
+            database: diaspora_integration2
+    - path: /var/local/etc/diaspora/diaspora.yml
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          configuration:
+            environment:
+              url: "${diaspora_url}"
+              certificate_authorities: '/etc/ssl/certs/ca-certificates.crt'
+            server:
+              listen: '0.0.0.0:3000'
+              rails_environment: 'production'
+...
