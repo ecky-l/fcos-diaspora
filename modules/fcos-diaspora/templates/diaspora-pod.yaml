@@ -3,21 +3,21 @@ variant: fcos
 version: 1.1.0
 storage:
   directories:
-    - path: /var/mnt/data/diaspora/public/assets
+    - path: /mnt/data/diaspora/public/assets
       mode: 0755
       user:
         id: 1000
       group:
         id: 1000
-    - path: /var/mnt/data/diaspora/public/uploads
+    - path: /mnt/data/diaspora/public/uploads
       mode: 0755
       user:
         id: 1000
       group:
         id: 1000
-    - path: /var/mnt/data/postgresql
+    - path: /mnt/data/postgresql
       mode: 0755
-    - path: /var/mnt/data/redis
+    - path: /mnt/data/redis
       mode: 0755
   files:
     - path: /var/local/lib/diaspora/assets-precompile.sh
@@ -48,8 +48,8 @@ storage:
           podman run -it --rm \
                 --pull always \
                 -v /var/local/lib/diaspora/assets-precompile.sh:/home/diaspora/startup.sh:Z \
-                -v /var/mnt/data/diaspora/public/assets:/home/diaspora/diaspora/public/assets:Z \
-                -v /var/mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:Z \
+                -v /mnt/data/diaspora/public/assets:/home/diaspora/diaspora/public/assets:Z \
+                -v /mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:Z \
                 -v /var/local/etc/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
                 -v /var/local/etc/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
                 koehn/diaspora
@@ -63,20 +63,20 @@ storage:
                 -e POSTGRES_USER=diaspora \
                 -e POSTGRES_PASSWORD=${postgres_password} \
                 -e POSTGRES_DB=diaspora_production \
-                -v /var/mnt/data/postgresql:/var/lib/postgresql/data:Z \
+                -v /mnt/data/postgresql:/var/lib/postgresql/data:Z \
                 postgres:10-alpine
           podman create \
                 --pod diaspora \
                 --pull always \
                 --name redis \
-                -v /var/mnt/data/redis:/data:Z \
+                -v /mnt/data/redis:/data:Z \
                 redis redis-server --appendonly yes
           podman create \
                 --pod diaspora \
                 --pull always \
                 --name diaspora-ct \
-                -v /var/mnt/data/diaspora/public/assets:/home/diaspora/diaspora/public/assets:z \
-                -v /var/mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:z \
+                -v /mnt/data/diaspora/public/assets:/home/diaspora/diaspora/public/assets:z \
+                -v /mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:z \
                 -v /var/local/etc/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
                 -v /var/local/etc/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
                 koehn/diaspora
@@ -84,8 +84,8 @@ storage:
                 --pod diaspora \
                 --pull always \
                 --name nginx \
-                -v /var/mnt/data/letsencrypt:/etc/letsencrypt:Z \
-                -v /var/mnt/data/diaspora/public:/var/local/diaspora-public:z \
+                -v /mnt/data/letsencrypt/etc/letsencrypt:/etc/letsencrypt:Z \
+                -v /mnt/data/diaspora/public:/var/local/diaspora-public:z \
                 -v /var/local/etc/nginx/conf.d:/etc/nginx/conf.d:Z \
                 nginx:stable-alpine
           cd /etc/systemd/system/ && podman generate systemd -fn diaspora ; cd -

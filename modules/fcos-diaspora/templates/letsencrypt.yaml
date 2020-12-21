@@ -1,0 +1,62 @@
+---
+variant: fcos
+version: 1.1.0
+storage:
+  directories:
+    - path: /mnt/data/letsencrypt/etc/letsencrypt
+      mode: 0755
+    - path: /mnt/data/letsencrypt/var/lib/letsencrypt
+      mode: 0755
+  files:
+    - path: /usr/local/bin/certbot-certonly.sh
+      mode: 0755
+      contents:
+        inline: |
+          #!/bin/bash -e
+          podman run -it --rm \
+                -v /mnt/data/diaspora/public:/var/local/diaspora-public:z \
+                -v /mnt/data/letsencrypt/etc/letsencrypt:/etc/letsencrypt:z \
+                -v /mnt/data/letsencrypt/var/lib/letsencrypt:/var/lib/letsencrypt:z \
+                certbot/certbot \
+                certonly \
+                -d ${diaspora_server_name} \
+                --webroot --webroot-path /var/local/diaspora-public \
+                --agree-tos \
+                -m ${letsencrypt_email}
+    - path: /usr/local/bin/certbot-renew.sh
+      mode: 0755
+      contents:
+        inline: |
+          #!/bin/bash -e
+          podman run -it --rm \
+                -v /mnt/data/diaspora/public:/var/local/diaspora-public:z \
+                -v /mnt/data/letsencrypt/etc/letsencrypt:/etc/letsencrypt:z \
+                -v /mnt/data/letsencrypt/var/lib/letsencrypt:/var/lib/letsencrypt:z \
+                certbot/certbot \
+                renew \
+                --webroot --webroot-path /var/local/diaspora-public \
+                --post-hook "podman exec -it nginx nginx -s reload"
+systemd:
+  units:
+    - name: certbot-renew.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Renew certificates
+
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/local/bin/certbot-renew.sh
+    - name: certbot-renew.timer
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Daily check for cert renewal
+
+        [Timer]
+        OnCalendar=*-*-* 00:00:00
+        Persistent=true
+
+        [Install]
+        WantedBy=timers.target
+...

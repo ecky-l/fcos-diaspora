@@ -55,4 +55,5 @@ module "vb_diaspora" {
 
   postgres_password = "diaspora"
   diaspora_server_name = "diasp.e-lehmann.de"
+  letsencrypt_email = "podmin@diasp.e-lehmann.de"
 }
