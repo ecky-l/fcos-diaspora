@@ -70,7 +70,7 @@ storage:
         inline: |
           configuration:
             environment:
-              url: "${diaspora_url}"
+              url: "https://${diaspora_server_name}"
               certificate_authorities: '/etc/ssl/certs/ca-certificates.crt'
             server:
               listen: '0.0.0.0:3000'

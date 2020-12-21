@@ -43,7 +43,7 @@ variable "postgres_password" {
   description = "postgresql password"
 }
 
-variable "diaspora_url" {
+variable "diaspora_server_name" {
   type = string
   description = "The diaspora pod url"
 }

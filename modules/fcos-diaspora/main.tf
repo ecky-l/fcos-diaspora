@@ -34,7 +34,10 @@ data "ct_config" "diaspora_ignition" {
   [
     templatefile("${path.module}/templates/diaspora-config.yaml", {
       postgres_password = var.postgres_password
-      diaspora_url = var.diaspora_url
+      diaspora_server_name = var.diaspora_server_name
+    }),
+    templatefile("${path.module}/templates/nginx-config.yaml", {
+      diaspora_server_name = var.diaspora_server_name
     }),
     templatefile("${path.module}/templates/diaspora-pod.yaml", {
       postgres_password = var.postgres_password

@@ -3,13 +3,38 @@ variant: fcos
 version: 1.1.0
 storage:
   directories:
-    - path: /var/mnt/data/diaspora/uploads
+    - path: /var/mnt/data/diaspora/public/assets
       mode: 0755
+      user:
+        id: 1000
+      group:
+        id: 1000
+    - path: /var/mnt/data/diaspora/public/uploads
+      mode: 0755
+      user:
+        id: 1000
+      group:
+        id: 1000
     - path: /var/mnt/data/postgresql
       mode: 0755
     - path: /var/mnt/data/redis
       mode: 0755
   files:
+    - path: /var/local/lib/diaspora/assets-precompile.sh
+      mode: 0755
+      user:
+        id: 1000
+      group:
+        id: 1000
+      overwrite: true
+      contents:
+        inline: |
+          #!/bin/bash --login
+          cd diaspora
+          mkdir -p tmp/pids
+          mkdir -p tmp/cache
+          export RAILS_ENV=production
+          bin/rake assets:precompile
     - path: /usr/local/bin/install-diaspora.sh
       mode: 0755
       overwrite: true
@@ -19,7 +44,18 @@ storage:
           if podman pod exists diaspora; then
               podman pod rm -f diaspora
           fi
-          podman pod create --name diaspora
+          echo "Precompiling assets. This might take some while"
+          podman run -it --rm \
+                --pull always \
+                -v /var/local/lib/diaspora/assets-precompile.sh:/home/diaspora/startup.sh:Z \
+                -v /var/mnt/data/diaspora/public/assets:/home/diaspora/diaspora/public/assets:Z \
+                -v /var/mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:Z \
+                -v /var/local/etc/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
+                -v /var/local/etc/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
+                koehn/diaspora
+          echo "Assets precompilation done"
+
+          podman pod create --name diaspora -p 80:80 -p 443:443
           podman create \
                 --pod diaspora \
                 --pull always \
@@ -39,10 +75,19 @@ storage:
                 --pod diaspora \
                 --pull always \
                 --name diaspora-ct \
-                -v /var/mnt/data/diaspora/uploads:/home/diaspora/diaspora/public/uploads:Z \
+                -v /var/mnt/data/diaspora/public/assets:/home/diaspora/diaspora/public/assets:z \
+                -v /var/mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:z \
                 -v /var/local/etc/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
                 -v /var/local/etc/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
                 koehn/diaspora
+          podman create \
+                --pod diaspora \
+                --pull always \
+                --name nginx \
+                -v /var/mnt/data/letsencrypt:/etc/letsencrypt:Z \
+                -v /var/mnt/data/diaspora/public:/var/local/diaspora-public:z \
+                -v /var/local/etc/nginx/conf.d:/etc/nginx/conf.d:Z \
+                nginx:stable-alpine
           cd /etc/systemd/system/ && podman generate systemd -fn diaspora ; cd -
           systemctl daemon-reload
           systemctl enable pod-diaspora
