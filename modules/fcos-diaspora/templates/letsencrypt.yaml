@@ -7,6 +7,10 @@ storage:
       mode: 0755
     - path: /mnt/data/letsencrypt/var/lib/letsencrypt
       mode: 0755
+    - path: /mnt/data/letsencrypt/var/log/letsencrypt
+      mode: 0755
+    - path: /var/local/certbot-renew
+      mode: 0755
   files:
     - path: /usr/local/bin/certbot-certonly.sh
       mode: 0755
@@ -17,6 +21,7 @@ storage:
                 -v /mnt/data/diaspora/public:/var/local/diaspora-public:z \
                 -v /mnt/data/letsencrypt/etc/letsencrypt:/etc/letsencrypt:z \
                 -v /mnt/data/letsencrypt/var/lib/letsencrypt:/var/lib/letsencrypt:z \
+                -v /mnt/data/letsencrypt/var/log/letsencrypt:/var/log/letsencrypt:Z \
                 certbot/certbot \
                 certonly \
                 -d ${diaspora_server_name} \
@@ -29,13 +34,20 @@ storage:
         inline: |
           #!/bin/bash -e
           podman run -it --rm \
+                -v /var/local/certbot-renew:/var/local/certbot-renew:Z \
                 -v /mnt/data/diaspora/public:/var/local/diaspora-public:z \
                 -v /mnt/data/letsencrypt/etc/letsencrypt:/etc/letsencrypt:z \
                 -v /mnt/data/letsencrypt/var/lib/letsencrypt:/var/lib/letsencrypt:z \
+                -v /mnt/data/letsencrypt/var/log/letsencrypt:/var/log/letsencrypt:Z \
                 certbot/certbot \
                 renew \
                 --webroot --webroot-path /var/local/diaspora-public \
-                --post-hook "podman exec -it nginx nginx -s reload"
+                --post-hook "/bin/touch /var/local/certbot-renew/cert-refresh"
+
+          if test -f /var/local/certbot-renew/cert-refresh; then
+              podman exec -it nginx nginx -s reload
+              rm -f /var/local/certbot-renew/cert-refresh
+          fi
 systemd:
   units:
     - name: certbot-renew.service

@@ -75,4 +75,7 @@ storage:
             server:
               listen: '0.0.0.0:3000'
               rails_environment: 'production'
+          production:
+            environment:
+              #redis: 'redis://production.example.org:6379'
 ...
