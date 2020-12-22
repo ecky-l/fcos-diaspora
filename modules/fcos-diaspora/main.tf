@@ -45,6 +45,7 @@ data "ct_config" "diaspora_ignition" {
     }),
     templatefile("${path.module}/templates/diaspora-pod.yaml", {
       postgres_password = var.postgres_password
+      diaspora_server_name = var.diaspora_server_name
     })
   ]
   )

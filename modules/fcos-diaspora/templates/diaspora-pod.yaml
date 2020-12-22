@@ -93,6 +93,13 @@ storage:
                 -v /mnt/data/diaspora/public:/var/local/diaspora-public:z \
                 -v /var/local/etc/nginx/conf.d:/etc/nginx/conf.d:Z \
                 nginx:stable-alpine
+          podman create \
+                --pod diaspora \
+                --pull always \
+                --name exim4 \
+                -e MAILNAME=${diaspora_server_name} \
+                -e DISABLE_IPV6=1 \
+                carlosedp/docker-smtp
           cd /etc/systemd/system/ && podman generate systemd -fn diaspora ; cd -
           systemctl daemon-reload
           systemctl enable pod-diaspora

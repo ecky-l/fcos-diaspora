@@ -75,6 +75,13 @@ storage:
             server:
               listen: '0.0.0.0:3000'
               rails_environment: 'production'
+            mail:
+              method: 'smtp'
+              smtp:
+                host: 'localhost'
+                port: 25
+                authentication: 'none'
+                domain: '${diaspora_server_name}'
           production:
             environment:
               #redis: 'redis://production.example.org:6379'
