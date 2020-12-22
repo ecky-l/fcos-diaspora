@@ -3,6 +3,8 @@ variant: fcos
 version: 1.1.0
 storage:
   directories:
+    - path: /mnt/data/diaspora/backups
+      mode: 0755
     - path: /mnt/data/diaspora/public/assets
       mode: 0755
       user:
@@ -66,7 +68,7 @@ storage:
                 -e POSTGRES_PASSWORD=${postgres_password} \
                 -e POSTGRES_DB=diaspora_production \
                 -v /mnt/data/postgresql/data:/var/lib/postgresql/data:Z \
-                -v /mnt/data/postgresql/backups:/var/local/postgresql/backups:z \
+                -v /mnt/data/postgresql/backups:/var/local/postgresql-backups:z \
                 postgres:10-alpine
           podman create \
                 --pod diaspora \
