@@ -23,6 +23,10 @@ locals {
   args   = local.boot_args
 }
 
+resource "random_password" "postgresql-password" {
+  length = 24
+}
+
 data "ct_config" "diaspora_ignition" {
   strict = true
   pretty_print = false
@@ -33,7 +37,7 @@ data "ct_config" "diaspora_ignition" {
           var.snippets,
   [
     templatefile("${path.module}/templates/diaspora-config.yaml", {
-      postgres_password = var.postgres_password
+      postgres_password = random_password.postgresql-password.result
       diaspora_server_name = var.diaspora_server_name
     }),
     templatefile("${path.module}/templates/nginx-config.yaml", {
@@ -44,7 +48,7 @@ data "ct_config" "diaspora_ignition" {
       letsencrypt_email = var.letsencrypt_email
     }),
     templatefile("${path.module}/templates/diaspora-pod.yaml", {
-      postgres_password = var.postgres_password
+      postgres_password = random_password.postgresql-password.result
       diaspora_server_name = var.diaspora_server_name
     })
   ]

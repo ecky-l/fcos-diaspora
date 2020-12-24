@@ -38,11 +38,6 @@ variable "mac_address" {
   description = "MAC address of the node for matchbox selection"
 }
 
-variable "postgres_password" {
-  type = string
-  description = "postgresql password"
-}
-
 variable "diaspora_server_name" {
   type = string
   description = "The diaspora pod url"

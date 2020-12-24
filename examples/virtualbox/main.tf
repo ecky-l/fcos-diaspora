@@ -35,8 +35,8 @@ module "vb_snippets" {
     }
   }
 
-  root_partition_size_gib = {
-    diaspora = 24
+  root_partition = {
+    diaspora = {}
   }
 }
 
@@ -53,7 +53,10 @@ module "vb_diaspora" {
 
   mac_address = "08:00:27:0C:E1:06"
 
-  postgres_password = "diaspora"
   diaspora_server_name = "diasp.e-lehmann.de"
   letsencrypt_email = "podmin@diasp.e-lehmann.de"
+}
+
+output "postgresql-password" {
+  value = module.vb_diaspora.postgresql-password
 }
