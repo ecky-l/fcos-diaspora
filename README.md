@@ -16,10 +16,10 @@ There are several ways to produce an ignition and one of them is [terraform](htt
 provider to generate an ignition suitable for provisioning and installation of a complete Fedora CoreOS machine with
 a diaspora* pod. It does also make use of the [fcos-ignition-snippets](https://github.com/ecky-l/fcos-ignition-snippets)
 module to produce common ignition fragments, including special partition setup. The resulting machine has a small root
-partition, which is large enough to fit two ostree deployments and the container metadata plus some configuration and a 
-presumably large data partition for the diaspora* data, that can survive a reprovisioning (as long as the partition
+partition, which is large enough to hold two ostree deployments and the container metadata plus some configuration, and
+a presumably large data partition for the diaspora data, that can survive a reprovisioning (as long as the partition
 sizes are not changed). That means that the root partition can be recreated at any time without loosing the data - 
-nevertheless it makes sense to pull backups of the data to another machine.
+nevertheless it makes sense to pull backups of the data.
 
 There are several ways to attach an ignition file to a new VM/image to boot and configure the image. One of them is PXE
 boot boot. This is currently the only implemented method in this project and it requires a machine running a matchbox
@@ -32,13 +32,13 @@ everything out before actually going in production.
 
 ## Usage
 
-The virtualbox example shows a teraform module which uses the fcos-diaspora module. You can edit the values as needed
+The virtualbox example shows a terraform module which uses the fcos-diaspora module. You can edit the values as needed
 (especially the url and the MAC address) and then run `terraform init`, `terraform plan` and `terraform apply` in the
 examples/virtualbox directory. This actually needs the mentioned matchbox service setup to work and it will upload a
 matchbox profile to the matchbox service, which is delivered when the host is switched on and requests network boot.
 
 A real world deployment works the same but with different parameters. You must have a matchbox/PXE environment running
-in your public hosting platform, but just for as long as the diaspora pod boots up vial network. Then you write a module
+in your public hosting platform, but just for as long as the diaspora pod boots up via network. Then you write a module
 that source's this project's module, i.e.
 
 ```
@@ -49,9 +49,9 @@ module "my_diaspora_pod" {
 ```
 
 Like in the example but with real parameters. The ignition snippets are also necessary, at least for the core user
-authorized keys. The providers configuration (see examples/virtualbox/providers.tf) points to your matchbox service.
-Then, a `terraform apply` will generate the profile in your real matchbox environment and the machine can be started and
-will be ready within a few minutes.
+authorized keys. The terraform matchbox provider configuration (see examples/virtualbox/providers.tf) points to your
+matchbox service. Then, a `terraform apply` will generate the profile in your real matchbox environment and the machine
+can be started and will be ready within a few minutes.
 
 ## Data migration / restoration steps
 
