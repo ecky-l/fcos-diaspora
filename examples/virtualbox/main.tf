@@ -41,9 +41,7 @@ module "vb_snippets" {
 }
 
 module "vb_diaspora" {
-  source = "../../modules/fcos-diaspora"
-
-  matchbox_http_endpoint = "http://10.10.0.1:8080"
+  source = "../../modules/fcos-diaspora-ignition"
 
   snippets = [
     module.vb_snippets.user_snippets.diaspora.content,
@@ -51,10 +49,16 @@ module "vb_diaspora" {
     module.vb_snippets.network_snippets.diaspora.content,
   ]
 
-  mac_address = "08:00:27:0C:E1:06"
-
   diaspora_server_name = "diasp.e-lehmann.de"
   letsencrypt_email = "podmin@diasp.e-lehmann.de"
+}
+
+module "vb_diaspora_matchbox" {
+  source = "../../modules/fcos-diaspora-matchbox"
+
+  matchbox_http_endpoint = "http://10.10.0.1:8080"
+  mac_address = "08:00:27:0C:E1:06"
+  diaspora_ignition = module.vb_diaspora.diaspora_ignition.rendered
 }
 
 output "postgresql-password" {

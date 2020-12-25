@@ -27,23 +27,12 @@ variable "kernel_args" {
   default     = []
 }
 
-variable "snippets" {
-  type = list(string)
-  description = "additional ignition snippets"
-  default = []
-}
-
 variable "mac_address" {
   type = string
   description = "MAC address of the node for matchbox selection"
 }
 
-variable "diaspora_server_name" {
+variable "diaspora_ignition" {
   type = string
-  description = "The diaspora pod url"
-}
-
-variable "letsencrypt_email" {
-  type = string
-  description = "Email for letsencrypt mail notification"
+  description = "The ignition to upload"
 }
