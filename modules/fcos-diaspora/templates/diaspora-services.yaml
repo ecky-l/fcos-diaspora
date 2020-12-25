@@ -99,7 +99,7 @@ storage:
                 --ip ${nginx_ip} \
                 -p 80:80/tcp \
                 -p 443:443/tcp \
-                -v /mnt/data/letsencrypt/etc/letsencrypt:/etc/letsencrypt:Z \
+                -v /mnt/data/letsencrypt/etc/letsencrypt:/etc/letsencrypt:z \
                 -v /mnt/data/diaspora/public:/var/local/diaspora-public:z \
                 -v /var/local/etc/nginx/conf.d:/etc/nginx/conf.d:Z \
                 docker.io/nginx:stable-alpine
