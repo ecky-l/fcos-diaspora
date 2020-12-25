@@ -13,7 +13,7 @@ storage:
         inline: |
           postgresql: &postgresql
             adapter: postgresql
-            host: localhost
+            host: ${postgresql_ip}
             port: 5432
             username: diaspora
             password: ${postgres_password}
@@ -72,13 +72,14 @@ storage:
             environment:
               url: "https://${diaspora_server_name}"
               certificate_authorities: '/etc/ssl/certs/ca-certificates.crt'
+              redis: 'redis://${redis_ip}'
             server:
               listen: '0.0.0.0:3000'
               rails_environment: 'production'
             mail:
               method: 'smtp'
               smtp:
-                host: 'localhost'
+                host: '${smtpd_ip}'
                 port: 25
                 authentication: 'none'
                 domain: '${diaspora_server_name}'

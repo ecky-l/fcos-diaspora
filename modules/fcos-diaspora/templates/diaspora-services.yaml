@@ -45,9 +45,8 @@ storage:
       contents:
         inline: |
           #!/bin/bash -e
-          if podman pod exists diaspora; then
-              podman pod rm -f diaspora
-          fi
+          SERVICES="postgresql redis diaspora nginx exim4"
+
           echo "Precompiling assets. This might take some while"
           podman run -it --rm \
                 --pull always \
@@ -56,54 +55,74 @@ storage:
                 -v /mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:Z \
                 -v /var/local/etc/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
                 -v /var/local/etc/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
-                koehn/diaspora
+                docker.io/koehn/diaspora
           echo "Assets precompilation done"
 
-          podman pod create --name diaspora -p 80:80 -p 443:443
+          for s in $${SERVICES}; do
+              if podman container exists $${s}; then
+                  echo -n "stopping and deleting $${s}... "
+                  systemctl stop container-$${s}
+                  podman rm -f $${s}
+                  rm -f /etc/systemd/system/container-$${s}
+              fi
+          done
+          systemctl daemon-reload
+
           podman create \
-                --pod diaspora \
                 --pull always \
                 --name postgresql \
+                --ip ${postgresql_ip} \
                 -e POSTGRES_USER=diaspora \
-                -e POSTGRES_PASSWORD=${postgres_password} \
+                -e POSTGRES_PASSWORD='${postgres_password}' \
                 -e POSTGRES_DB=diaspora_production \
                 -v /mnt/data/postgresql/data:/var/lib/postgresql/data:Z \
                 -v /mnt/data/postgresql/backups:/var/local/postgresql-backups:z \
-                postgres:10-alpine
+                docker.io/postgres:10-alpine
           podman create \
-                --pod diaspora \
                 --pull always \
                 --name redis \
+                --ip ${redis_ip} \
                 -v /mnt/data/redis:/data:Z \
-                redis redis-server --appendonly yes
+                docker.io/redis redis-server --appendonly yes
           podman create \
-                --pod diaspora \
                 --pull always \
-                --name diaspora-ct \
+                --name diaspora \
+                --ip ${diaspora_ip} \
                 -v /mnt/data/diaspora/public/assets:/home/diaspora/diaspora/public/assets:z \
                 -v /mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:z \
                 -v /var/local/etc/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
                 -v /var/local/etc/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
-                koehn/diaspora
+                docker.io/koehn/diaspora
           podman create \
-                --pod diaspora \
                 --pull always \
                 --name nginx \
+                --ip ${nginx_ip} \
+                -p 80:80/tcp \
+                -p 443:443/tcp \
                 -v /mnt/data/letsencrypt/etc/letsencrypt:/etc/letsencrypt:Z \
                 -v /mnt/data/diaspora/public:/var/local/diaspora-public:z \
                 -v /var/local/etc/nginx/conf.d:/etc/nginx/conf.d:Z \
-                nginx:stable-alpine
+                docker.io/nginx:stable-alpine
           podman create \
-                --pod diaspora \
                 --pull always \
                 --name exim4 \
+                --ip ${smtpd_ip} \
                 -e MAILNAME=${diaspora_server_name} \
                 -e DISABLE_IPV6=1 \
-                carlosedp/docker-smtp
-          cd /etc/systemd/system/ && podman generate systemd -fn diaspora ; cd -
+                docker.io/carlosedp/docker-smtp
+
+          PWD=$(pwd)
+          cd /etc/systemd/system/
+          cd /etc/systemd/system/
+          for s in $${SERVICES}; do
+              podman generate systemd -fn $${s}
+          done
           systemctl daemon-reload
-          systemctl enable pod-diaspora
-          systemctl start pod-diaspora
+          for s in $${SERVICES}; do
+              systemctl reenable container-$${s}
+              systemctl start container-$${s}
+          done
+
           mkdir -p /var/log/provision-done
           touch /var/log/provision-done/install-diaspora
 systemd:

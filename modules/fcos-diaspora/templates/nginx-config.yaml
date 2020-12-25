@@ -90,7 +90,7 @@ storage:
           # Add as many server directives as you want
           # Also takes a socket, like unix:/path/to/some/socket.sock
           upstream diaspora_server {
-            server localhost:3000;
+            server ${diaspora_ip}:3000;
           }
 
           # Camo support
