@@ -8,6 +8,7 @@ locals {
     "rd.neednet=1",
     "console=tty0",
     "console=ttyS0",
+    "coreos.live.rootfs_url=${local.rootfs}",
     "coreos.inst.install_dev=${var.install_disk}",
     #"coreos.inst.stream=${var.os_stream}",
     # for the next line to work, the .raw.xz must be downloaded to the appropriate place.
@@ -23,8 +24,7 @@ resource "matchbox_profile" "diaspora" {
 
   kernel = local.kernel
   initrd = [
-    local.initramfs,
-    local.rootfs
+    local.initramfs
   ]
   args = concat(local.boot_args, var.kernel_args)
 
