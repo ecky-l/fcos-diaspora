@@ -3,5 +3,5 @@ output "postgresql-password" {
 }
 
 output "diaspora_ignition" {
-  value = data.ct_config.diaspora_ignition
+  value = data.ct_config.diaspora_ignition.rendered
 }
