@@ -29,7 +29,6 @@ resource "matchbox_profile" "diaspora" {
   args = concat(local.boot_args, var.kernel_args)
 
   raw_ignition = var.diaspora_ignition
-  #raw_ignition = data.ct_config.diaspora_ignition.rendered
 }
 
 resource "matchbox_group" "diaspora" {
