@@ -83,7 +83,7 @@ storage:
                 --name redis \
                 --ip ${redis_ip} \
                 -v /mnt/data/redis:/data:Z \
-                docker.io/redis redis-server --appendonly yes
+                docker.io/redis:${redis_version} redis-server --appendonly yes
           podman create \
                 --pull always \
                 --name diaspora \
@@ -92,7 +92,7 @@ storage:
                 -v /mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:z \
                 -v /var/local/etc/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
                 -v /var/local/etc/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
-                docker.io/koehn/diaspora
+                docker.io/koehn/diaspora:${diaspora_version}
           podman create \
                 --pull always \
                 --name nginx \
@@ -102,7 +102,7 @@ storage:
                 -v /mnt/data/letsencrypt/etc/letsencrypt:/etc/letsencrypt:z \
                 -v /mnt/data/diaspora/public:/var/local/diaspora-public:z \
                 -v /var/local/etc/nginx/conf.d:/etc/nginx/conf.d:Z \
-                docker.io/nginx:stable-alpine
+                docker.io/nginx:${nginx_version}
           podman create \
                 --pull always \
                 --name exim4 \

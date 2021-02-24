@@ -37,6 +37,10 @@ data "ct_config" "diaspora_ignition" {
     }),
     templatefile("${path.module}/templates/diaspora-services.yaml", {
       postgres_password = random_password.postgresql-password.result
+      postgresql_version = var.postgresql_version
+      redis_version = var.redis_version
+      diaspora_version = var.diaspora_version
+      nginx_version = var.nginx_version
       diaspora_server_name = var.diaspora_server_name
       postgresql_ip = local.postgresql_ip
       redis_ip = local.redis_ip

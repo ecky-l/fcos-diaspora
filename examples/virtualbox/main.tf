@@ -29,7 +29,6 @@ module "vb_snippets" {
       enp0s9 = {
         "ipv4" = {
           "method" = "auto"
-          "ignore-auto-dns" = "true"
         }
       }
     }
@@ -49,6 +48,7 @@ module "vb_diaspora" {
     module.vb_snippets.network_snippets.diaspora.content,
   ]
 
+  diaspora_version = "v0.7.14.0-6"
   diaspora_server_name = "diasp.e-lehmann.de"
   letsencrypt_email = "podmin@diasp.e-lehmann.de"
 }
