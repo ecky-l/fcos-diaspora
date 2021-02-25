@@ -17,6 +17,12 @@ storage:
         id: 1000
       group:
         id: 1000
+    - path: /mnt/data/diaspora/log
+      mode: 0755
+      user:
+        id: 1000
+      group:
+        id: 1000
     - path: /mnt/data/postgresql/data
       mode: 0755
     - path: /mnt/data/postgresql/backups
@@ -55,7 +61,7 @@ storage:
                 -v /mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:Z \
                 -v /var/local/etc/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
                 -v /var/local/etc/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
-                docker.io/koehn/diaspora
+                docker.io/koehn/diaspora:${diaspora_version}
           echo "Assets precompilation done"
 
           for s in $${SERVICES}; do
@@ -92,6 +98,7 @@ storage:
                 -v /mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:z \
                 -v /var/local/etc/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
                 -v /var/local/etc/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
+                -v /mnt/data/diaspora/log:/home/diaspora/diaspora/log:Z \
                 docker.io/koehn/diaspora:${diaspora_version}
           podman create \
                 --pull always \
