@@ -29,6 +29,9 @@ data "ct_config" "diaspora_ignition" {
       enable_registrations = var.diaspora_enable_registrations
       autofollow_podmin = var.diaspora_autofollow_podmin
       enable_welcome_message = var.diaspora_enable_welcome_message
+      remove_old_users = var.diaspora_remove_old_users
+      terms_enable = var.diaspora_terms_enable
+      terms_jurisdication = var.diaspora_terms_jurisdication
       postgresql_ip = local.postgresql_ip
       redis_ip = local.redis_ip
       smtpd_ip = local.smtpd_ip

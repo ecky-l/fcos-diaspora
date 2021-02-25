@@ -67,6 +67,21 @@ variable "diaspora_enable_welcome_message" {
   default = true
 }
 
+variable "diaspora_remove_old_users" {
+  type = bool
+  default = true
+}
+
+variable "diaspora_terms_enable" {
+  type = bool
+  default = true
+}
+
+variable "diaspora_terms_jurisdication" {
+  type = string
+  default = "Germany"
+}
+
 variable "letsencrypt_email" {
   type = string
   description = "Email for letsencrypt mail notification"

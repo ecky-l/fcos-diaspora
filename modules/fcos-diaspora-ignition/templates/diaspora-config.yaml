@@ -92,6 +92,14 @@ storage:
                 enabled: ${enable_welcome_message}
                 subject: Welcome Message
                 text: Hello %%{username}, welcome to diaspora.
+              terms:
+                enable: ${terms_enable}
+                jurisdiction: ${terms_jurisdication}
+              maintenance:
+                remove_old_users:
+                  enable: ${remove_old_users}
+                  after_days: 365
+                  warn_days: 30
             mail:
               enable: true
               method: 'smtp'
