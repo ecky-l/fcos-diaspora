@@ -23,6 +23,12 @@ data "ct_config" "diaspora_ignition" {
     templatefile("${path.module}/templates/diaspora-config.yaml", {
       postgres_password = random_password.postgresql-password.result
       diaspora_server_name = var.diaspora_server_name
+      admin_account = var.diaspora_admin_account
+      admin_email = var.diaspora_admin_email == "<>" ? "${var.diaspora_admin_account}@${var.diaspora_server_name}" : var.diaspora_admin_email
+      display_statistics = var.diaspora_display_statistics
+      enable_registrations = var.diaspora_enable_registrations
+      autofollow_podmin = var.diaspora_autofollow_podmin
+      enable_welcome_message = var.diaspora_enable_welcome_message
       postgresql_ip = local.postgresql_ip
       redis_ip = local.redis_ip
       smtpd_ip = local.smtpd_ip

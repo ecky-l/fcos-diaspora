@@ -71,18 +71,38 @@ storage:
           configuration:
             environment:
               url: "https://${diaspora_server_name}"
+              require_ssl: true
               certificate_authorities: '/etc/ssl/certs/ca-certificates.crt'
               redis: 'redis://${redis_ip}'
+              sidekiq:
+                concurrency: 25
             server:
               listen: '0.0.0.0:3000'
               rails_environment: 'production'
+            privacy:
+              statistics:
+                user_counts: ${display_statistics}
+                post_counts: ${display_statistics}
+                comment_counts: ${display_statistics}
+            settings:
+              enable_registrations: ${enable_registrations}
+              autofollow_on_join: ${autofollow_podmin}
+              autofollow_on_join_user: '${admin_account}@${diaspora_server_name}'
+              welcome_message:
+                enabled: ${enable_welcome_message}
+                subject: Welcome Message
+                text: Hello %%{username}, welcome to diaspora.
             mail:
+              enable: true
               method: 'smtp'
               smtp:
                 host: '${smtpd_ip}'
                 port: 25
                 authentication: 'none'
                 domain: '${diaspora_server_name}'
+            admins:
+              account: ${admin_account}
+              podmin_email: '${admin_email}'
           production:
             environment:
               #redis: 'redis://production.example.org:6379'
