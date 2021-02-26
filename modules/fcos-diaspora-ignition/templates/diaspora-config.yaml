@@ -102,6 +102,7 @@ storage:
                   warn_days: 30
             mail:
               enable: true
+              sender_address: 'diaspora@${diaspora_server_name}'
               method: 'smtp'
               smtp:
                 host: '${smtpd_ip}'
