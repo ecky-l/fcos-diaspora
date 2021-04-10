@@ -124,7 +124,8 @@ storage:
                --pull always \
                --name $${SERVICE} \
                --net host \
-               -v /var/local/etc/exim4/exim4.conf.template:/etc/exim4/exim4.conf.template:Z \
+               -v /var/local/etc/exim4/entrypoint-local.sh:/bin/entrypoint-local.sh:Z \
+               --entrypoint '/bin/entrypoint-local.sh' \
                -e MAILNAME=${diaspora_server_name} \
                -e BIND_IP=10.88.0.1 \
                -e RELAY_NETWORKS="10.88.0.0/16" \

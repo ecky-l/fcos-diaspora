@@ -1,0 +1,21 @@
+---
+variant: fcos
+version: 1.1.0
+storage:
+  directories:
+    - path: /var/local/etc/exim4
+      mode: 0755
+  files:
+    - path: /var/local/etc/exim4/entrypoint-local.sh
+      mode: 0755
+      overwrite: true
+      contents:
+        inline: |
+          #!/bin/bash -e
+          cp /etc/exim4/exim4.conf.template /tmp/
+          SMTP_IP=$(ip addr show dev ${exim4_smtp_iface} | awk '$1 == "inet" { print $2 }' | cut -d'/' -f1)
+          awk \
+              "/^  driver = smtp/ { print; print \"  interface = $${SMTP_IP}\"; next }1" \
+              /tmp/exim4.conf.template \
+              > /etc/exim4/exim4.conf.template
+          exec /bin/entrypoint.sh exim -bd -q15m -v

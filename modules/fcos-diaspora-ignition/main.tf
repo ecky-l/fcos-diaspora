@@ -3,7 +3,7 @@ locals {
   redis_ip = "10.88.0.6"
   diaspora_ip = "10.88.0.7"
   nginx_ip = "10.88.0.8"
-  smtpd_ip = "10.88.0.9"
+  smtpd_ip = "10.88.0.1"
 }
 
 resource "random_password" "postgresql-password" {
@@ -20,7 +20,7 @@ data "ct_config" "diaspora_ignition" {
   snippets = concat(
           var.snippets,
   [
-    templatefile("${path.module}/templates/diaspora-config.yaml", {
+    templatefile("${path.module}/templates/config-diaspora.yaml", {
       postgres_password = random_password.postgresql-password.result
       diaspora_server_name = var.diaspora_server_name
       admin_account = var.diaspora_admin_account
@@ -36,7 +36,10 @@ data "ct_config" "diaspora_ignition" {
       redis_ip = local.redis_ip
       smtpd_ip = local.smtpd_ip
     }),
-    templatefile("${path.module}/templates/nginx-config.yaml", {
+    templatefile("${path.module}/templates/config-exim4.yaml", {
+      exim4_smtp_iface = var.exim4_smtp_iface
+    }),
+    templatefile("${path.module}/templates/config-nginx.yaml", {
       diaspora_server_name = var.diaspora_server_name
       diaspora_ip = local.diaspora_ip
     }),
@@ -55,7 +58,6 @@ data "ct_config" "diaspora_ignition" {
       redis_ip = local.redis_ip
       diaspora_ip = local.diaspora_ip
       nginx_ip = local.nginx_ip
-      smtpd_ip = local.smtpd_ip
     })
   ]
   )

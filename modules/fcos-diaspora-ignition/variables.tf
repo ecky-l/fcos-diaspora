@@ -29,6 +29,11 @@ variable "nginx_version" {
   default = "stable-alpine"
 }
 
+variable "exim4_smtp_iface" {
+  type = string
+  description = "the interface where exim4 sends mail. Is configured in the remote_smtp section of exim4"
+}
+
 variable "diaspora_server_name" {
   type = string
   description = "The diaspora pod url"
