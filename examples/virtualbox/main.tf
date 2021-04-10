@@ -58,7 +58,7 @@ module "vb_diaspora_matchbox" {
   source = "../../modules/fcos-diaspora-matchbox"
 
   matchbox_http_endpoint = "http://10.10.0.1:8080"
-  mac_address = "08:00:27:0C:E1:06"
+  mac_address = "08:00:27:C7:08:13"
   diaspora_ignition = module.vb_diaspora.diaspora_ignition
 }
 
