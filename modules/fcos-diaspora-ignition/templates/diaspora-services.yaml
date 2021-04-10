@@ -45,54 +45,115 @@ storage:
           mkdir -p tmp/cache
           export RAILS_ENV=production
           bin/rake assets:precompile
-    - path: /usr/local/bin/install-diaspora.sh
+    - path: /usr/local/libexec/install-commons.sh
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          #!/bin/bash -e
+          stop_and_remove_service() {
+              local _service
+              _service=$${1}
+              if podman container exists $${_service}; then
+                  echo -n "stopping and deleting $${_service}... "
+                  systemctl stop container-$${_service}
+                  podman rm -f $${_service}
+                  rm -f /etc/systemd/system/container-$${_service}
+              fi
+              systemctl daemon-reload
+          }
+
+          create_and_start_service() {
+              local _service _pwd
+              _service=$${1}
+
+              _pwd=$(pwd)
+              cd /etc/systemd/system/
+              podman generate systemd -fn $${_service}
+              systemctl daemon-reload
+              systemctl reenable container-$${_service}
+              systemctl start container-$${_service}
+              cd $${_pwd}
+          }
+    - path: /usr/local/libexec/install-postgresql.sh
       mode: 0755
       overwrite: true
       contents:
         inline: |
           #!/bin/bash -e
-          SERVICES="postgresql redis diaspora nginx exim4"
-
-          echo "Precompiling assets. This might take some while"
-          podman run -it --rm \
-                --pull always \
-                -v /var/local/lib/diaspora/assets-precompile.sh:/home/diaspora/startup.sh:Z \
-                -v /mnt/data/diaspora/public/assets:/home/diaspora/diaspora/public/assets:Z \
-                -v /mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:Z \
-                -v /var/local/etc/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
-                -v /var/local/etc/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
-                docker.io/koehn/diaspora:${diaspora_version}
-          echo "Assets precompilation done"
-
-          for s in $${SERVICES}; do
-              if podman container exists $${s}; then
-                  echo -n "stopping and deleting $${s}... "
-                  systemctl stop container-$${s}
-                  podman rm -f $${s}
-                  rm -f /etc/systemd/system/container-$${s}
-              fi
-          done
-          systemctl daemon-reload
-
+          . /usr/local/libexec/install-commons.sh
+          SERVICE=postgresql
+          stop_and_remove_service $${SERVICE}
+          podman create \
+               --pull always \
+               --name $${SERVICE} \
+               --ip ${postgresql_ip} \
+               -e POSTGRES_USER=diaspora \
+               -e POSTGRES_PASSWORD='${postgres_password}' \
+               -e POSTGRES_DB=diaspora_production \
+               -v /mnt/data/postgresql/data:/var/lib/postgresql/data:Z \
+               -v /mnt/data/postgresql/backups:/var/local/postgresql-backups:z \
+               docker.io/postgres:10-alpine
+          create_and_start_service $${SERVICE}
+    - path: /usr/local/libexec/install-redis.sh
+      mode: 0755
+      overwrite: true
+      contents:
+        inline: |
+          #!/bin/bash -e
+          . /usr/local/libexec/install-commons.sh
+          SERVICE=redis
+          stop_and_remove_service $${SERVICE}
           podman create \
                 --pull always \
-                --name postgresql \
-                --ip ${postgresql_ip} \
-                -e POSTGRES_USER=diaspora \
-                -e POSTGRES_PASSWORD='${postgres_password}' \
-                -e POSTGRES_DB=diaspora_production \
-                -v /mnt/data/postgresql/data:/var/lib/postgresql/data:Z \
-                -v /mnt/data/postgresql/backups:/var/local/postgresql-backups:z \
-                docker.io/postgres:10-alpine
-          podman create \
-                --pull always \
-                --name redis \
+                --name $${SERVICE} \
                 --ip ${redis_ip} \
                 -v /mnt/data/redis:/data:Z \
                 docker.io/redis:${redis_version} redis-server --appendonly yes
+          create_and_start_service $${SERVICE}
+    - path: /usr/local/libexec/install-exim4.sh
+      mode: 0755
+      overwrite: true
+      contents:
+        inline: |
+          #!/bin/bash -e
+          . /usr/local/libexec/install-commons.sh
+          SERVICE=exim4
+          stop_and_remove_service $${SERVICE}
+          podman create \
+               --pull always \
+               --name $${SERVICE} \
+               --net host \
+               -v /var/local/etc/exim4/exim4.conf.template:/etc/exim4/exim4.conf.template:Z \
+               -e MAILNAME=${diaspora_server_name} \
+               -e BIND_IP=10.88.0.1 \
+               -e RELAY_NETWORKS="10.88.0.0/16" \
+               -e DISABLE_IPV6=1 \
+               docker.io/carlosedp/docker-smtp
+          create_and_start_service $${SERVICE}
+    - path: /usr/local/libexec/install-diaspora.sh
+      mode: 0755
+      overwrite: true
+      contents:
+        inline: |
+          #!/bin/bash -e
+          . /usr/local/libexec/install-commons.sh
+          SERVICE=diaspora
+          stop_and_remove_service $${SERVICE}
+          echo "Precompiling assets. This might take some while"
+          podman run -it --rm \
+               --pull always \
+               -v /var/local/lib/diaspora/assets-precompile.sh:/home/diaspora/startup.sh:Z \
+               -v /mnt/data/diaspora/public/assets:/home/diaspora/diaspora/public/assets:Z \
+               -v /mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:Z \
+               -v /var/local/etc/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
+               -v /var/local/etc/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
+               docker.io/koehn/diaspora:${diaspora_version}
+          echo "Assets precompilation done"
+          echo "Creating diaspora container..."
           podman create \
                 --pull always \
-                --name diaspora \
+                --name $${SERVICE} \
                 --ip ${diaspora_ip} \
                 -v /mnt/data/diaspora/public/assets:/home/diaspora/diaspora/public/assets:z \
                 -v /mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:z \
@@ -100,9 +161,19 @@ storage:
                 -v /var/local/etc/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
                 -v /mnt/data/diaspora/log:/home/diaspora/diaspora/log:Z \
                 docker.io/koehn/diaspora:${diaspora_version}
+          create_and_start_service $${SERVICE}
+    - path: /usr/local/libexec/install-nginx.sh
+      mode: 0755
+      overwrite: true
+      contents:
+        inline: |
+          #!/bin/bash -e
+          . /usr/local/libexec/install-commons.sh
+          SERVICE=nginx
+          stop_and_remove_service $${SERVICE}
           podman create \
                 --pull always \
-                --name nginx \
+                --name $${SERVICE} \
                 --ip ${nginx_ip} \
                 -p 80:80/tcp \
                 -p 443:443/tcp \
@@ -110,26 +181,16 @@ storage:
                 -v /mnt/data/diaspora/public:/var/local/diaspora-public:z \
                 -v /var/local/etc/nginx/conf.d:/etc/nginx/conf.d:Z \
                 docker.io/nginx:${nginx_version}
-          podman create \
-                --pull always \
-                --name exim4 \
-                --ip ${smtpd_ip} \
-                -e MAILNAME=${diaspora_server_name} \
-                -e DISABLE_IPV6=1 \
-                docker.io/carlosedp/docker-smtp
-
-          PWD=$(pwd)
-          cd /etc/systemd/system/
-          cd /etc/systemd/system/
-          for s in $${SERVICES}; do
-              podman generate systemd -fn $${s}
+          create_and_start_service $${SERVICE}
+    - path: /usr/local/bin/install-diaspora.sh
+      mode: 0755
+      overwrite: true
+      contents:
+        inline: |
+          #!/bin/bash -e
+          for s in postgresql redis exim4 diaspora nginx; do
+              /usr/local/libexec/install-$${s}.sh &
           done
-          systemctl daemon-reload
-          for s in $${SERVICES}; do
-              systemctl reenable container-$${s}
-              systemctl start container-$${s}
-          done
-
           mkdir -p /var/log/provision-done
           touch /var/log/provision-done/install-diaspora
 systemd:
