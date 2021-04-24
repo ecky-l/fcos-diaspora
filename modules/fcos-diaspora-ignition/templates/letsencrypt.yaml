@@ -3,6 +3,8 @@ variant: fcos
 version: 1.1.0
 storage:
   directories:
+    - path: /mnt/data/diaspora/public
+      mode: 0755
     - path: /mnt/data/letsencrypt/etc/letsencrypt
       mode: 0755
     - path: /mnt/data/letsencrypt/var/lib/letsencrypt
@@ -22,8 +24,9 @@ storage:
                 -v /mnt/data/letsencrypt/etc/letsencrypt:/etc/letsencrypt:z \
                 -v /mnt/data/letsencrypt/var/lib/letsencrypt:/var/lib/letsencrypt:z \
                 -v /mnt/data/letsencrypt/var/log/letsencrypt:/var/log/letsencrypt:Z \
-                certbot/certbot \
+                docker.io/certbot/certbot \
                 certonly \
+                -n \
                 -d ${diaspora_server_name} \
                 --webroot --webroot-path /var/local/diaspora-public \
                 --agree-tos \
@@ -39,8 +42,9 @@ storage:
                 -v /mnt/data/letsencrypt/etc/letsencrypt:/etc/letsencrypt:z \
                 -v /mnt/data/letsencrypt/var/lib/letsencrypt:/var/lib/letsencrypt:z \
                 -v /mnt/data/letsencrypt/var/log/letsencrypt:/var/log/letsencrypt:Z \
-                certbot/certbot \
+                docker.io/certbot/certbot \
                 renew \
+                -n \
                 --webroot --webroot-path /var/local/diaspora-public \
                 --post-hook "/bin/touch /var/local/certbot-renew/cert-refresh"
 
