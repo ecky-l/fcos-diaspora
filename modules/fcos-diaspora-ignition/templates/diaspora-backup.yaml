@@ -1,0 +1,62 @@
+---
+variant: fcos
+version: 1.1.0
+storage:
+  files:
+    - path: /usr/local/bin/diaspora-backup.sh
+      mode: 0755
+      overwrite: true
+      contents:
+        inline: |
+          #!/bin/bash -e
+
+          TODAY=$(date +%Y%m%d)
+
+          # postgresql backup
+          podman exec -it postgresql pg_dump \
+              -U diaspora \
+              -h localhost \
+              -d diaspora_production \
+              -Ft \
+              -f /var/local/postgresql-backups/diaspora_production.$${TODAY}.dump
+
+          # diaspora uploads backup
+          tar \
+              -C /mnt/data/diaspora/public/uploads/ \
+              --preserve-permissions \
+              --same-owner \
+              -czf /mnt/data/diaspora/backups/diaspora_uploads.$${TODAY}.tar.gz \
+              images \
+              tmp \
+              users
+
+          # remove old backups
+          for d in postgresql diaspora; do
+              old_backup=$(find /mnt/data/$${d}/backups/ -type f | sort | head -n1)
+              old_date=$(echo $${old_backup} | cut -d'.' -f2)
+              test $${old_date} -ne $${TODAY} && rm -f $${old_backup}
+          done
+systemd:
+  units:
+    - name: diaspora-backup.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Make a backup of diaspora data
+
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/local/bin/diaspora-backup.sh
+    - name: diaspora-backup.timer
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Daily check for cert renewal
+
+        [Timer]
+        OnCalendar=weekly
+        AccuracySec=12h
+        Persistent=true
+
+        [Install]
+        WantedBy=timers.target
