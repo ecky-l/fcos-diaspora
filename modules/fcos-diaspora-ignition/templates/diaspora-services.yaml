@@ -124,7 +124,7 @@ storage:
                --pull always \
                --name $${SERVICE} \
                --net host \
-               -v /var/local/etc/exim4/entrypoint-local.sh:/bin/entrypoint-local.sh:Z \
+               -v /etc/opt/exim4/entrypoint-local.sh:/bin/entrypoint-local.sh:Z \
                --entrypoint '/bin/entrypoint-local.sh' \
                -e MAILNAME=${diaspora_server_name} \
                -e BIND_IP=10.88.0.1 \
@@ -147,8 +147,8 @@ storage:
                -v /var/local/lib/diaspora/assets-precompile.sh:/home/diaspora/startup.sh:Z \
                -v /mnt/data/diaspora/public/assets:/home/diaspora/diaspora/public/assets:Z \
                -v /mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:Z \
-               -v /var/local/etc/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
-               -v /var/local/etc/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
+               -v /etc/opt/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
+               -v /etc/opt/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
                docker.io/koehn/diaspora:${diaspora_version}
           echo "Assets precompilation done"
           echo "Creating diaspora container..."
@@ -158,8 +158,8 @@ storage:
                 --ip ${diaspora_ip} \
                 -v /mnt/data/diaspora/public/assets:/home/diaspora/diaspora/public/assets:z \
                 -v /mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:z \
-                -v /var/local/etc/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
-                -v /var/local/etc/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
+                -v /etc/opt/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
+                -v /etc/opt/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
                 -v /mnt/data/diaspora/log:/home/diaspora/diaspora/log:Z \
                 docker.io/koehn/diaspora:${diaspora_version}
           create_and_start_service $${SERVICE}
@@ -180,7 +180,7 @@ storage:
                 -p 443:443/tcp \
                 -v /mnt/data/letsencrypt/etc/letsencrypt:/etc/letsencrypt:z \
                 -v /mnt/data/diaspora/public:/var/local/diaspora-public:z \
-                -v /var/local/etc/nginx/conf.d:/etc/nginx/conf.d:Z \
+                -v /etc/opt/nginx/conf.d:/etc/nginx/conf.d:Z \
                 docker.io/nginx:${nginx_version}
           create_and_start_service $${SERVICE}
     - path: /usr/local/bin/install-diaspora.sh

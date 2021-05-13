@@ -3,10 +3,10 @@ variant: fcos
 version: 1.1.0
 storage:
   directories:
-    - path: /var/local/etc/nginx/conf.d
+    - path: /etc/opt/nginx/conf.d
       mode: 0755
   files:
-    - path: /var/local/etc/nginx/conf.d/default.conf
+    - path: /etc/opt/nginx/conf.d/default.conf
       mode: 0644
       overwrite: true
       contents:

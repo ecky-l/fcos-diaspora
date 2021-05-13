@@ -3,10 +3,10 @@ variant: fcos
 version: 1.1.0
 storage:
   directories:
-    - path: /var/local/etc/diaspora
+    - path: /etc/opt/diaspora
       mode: 0755
   files:
-    - path: /var/local/etc/diaspora/database.yml
+    - path: /etc/opt/diaspora/database.yml
       mode: 0644
       overwrite: true
       contents:
@@ -63,7 +63,7 @@ storage:
           integration2:
             <<: *combined
             database: diaspora_integration2
-    - path: /var/local/etc/diaspora/diaspora.yml
+    - path: /etc/opt/diaspora/diaspora.yml
       mode: 0644
       overwrite: true
       contents:
