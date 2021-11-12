@@ -10,6 +10,8 @@ storage:
         inline: |
           #!/bin/bash -e
 
+          set -exuo pipefail
+
           TODAY=$(date +%Y%m%d)
 
           # postgresql backup
@@ -19,6 +21,8 @@ storage:
               -d diaspora_production \
               -Ft \
               -f /var/local/postgresql-backups/diaspora_production.$${TODAY}.dump
+
+          gzip -v -9 /var/mnt/data/postgresql/backups/diaspora_production.$${TODAY}.dump
 
           # diaspora uploads backup
           tar \
