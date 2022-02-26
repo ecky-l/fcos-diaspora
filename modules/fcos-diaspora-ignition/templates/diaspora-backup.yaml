@@ -55,7 +55,7 @@ systemd:
       enabled: true
       contents: |
         [Unit]
-        Description=Daily check for cert renewal
+        Description=Weekly backup of diaspora data
 
         [Timer]
         OnCalendar=weekly
