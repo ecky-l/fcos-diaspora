@@ -140,6 +140,7 @@ storage:
           #!/bin/bash -e
           . /usr/local/libexec/install-commons.sh
           SERVICE=diaspora
+          VERSION=${diaspora_version}
           stop_and_remove_service $${SERVICE}
           echo "Precompiling assets. This might take some while"
           podman run -it --rm \
@@ -147,9 +148,10 @@ storage:
                -v /var/local/lib/diaspora/assets-precompile.sh:/home/diaspora/startup.sh:Z \
                -v /mnt/data/diaspora/public/assets:/home/diaspora/diaspora/public/assets:Z \
                -v /mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:Z \
-               -v /etc/opt/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
+               -v /etc/opt/diaspora/diaspora.toml:/home/diaspora/diaspora/config/diaspora.toml:Z \
                -v /etc/opt/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
-               docker.io/koehn/diaspora:${diaspora_version}
+               -v /mnt/data/diaspora/log:/home/diaspora/diaspora/log:Z \
+               docker.io/koehn/diaspora:$${VERSION}
           echo "Assets precompilation done"
           echo "Creating diaspora container..."
           podman create \
@@ -158,10 +160,10 @@ storage:
                 --ip ${diaspora_ip} \
                 -v /mnt/data/diaspora/public/assets:/home/diaspora/diaspora/public/assets:z \
                 -v /mnt/data/diaspora/public/uploads:/home/diaspora/diaspora/public/uploads:z \
-                -v /etc/opt/diaspora/diaspora.yml:/home/diaspora/diaspora/config/diaspora.yml:Z \
+                -v /etc/opt/diaspora/diaspora.toml:/home/diaspora/diaspora/config/diaspora.toml:Z \
                 -v /etc/opt/diaspora/database.yml:/home/diaspora/diaspora/config/database.yml:Z \
                 -v /mnt/data/diaspora/log:/home/diaspora/diaspora/log:Z \
-                docker.io/koehn/diaspora:${diaspora_version}
+                docker.io/koehn/diaspora:$${VERSION}
           create_and_start_service $${SERVICE}
     - path: /usr/local/libexec/install-nginx.sh
       mode: 0755

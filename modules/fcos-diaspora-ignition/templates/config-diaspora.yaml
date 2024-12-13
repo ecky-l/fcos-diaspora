@@ -77,7 +77,7 @@ storage:
               sidekiq:
                 concurrency: 25
             server:
-              listen: '0.0.0.0:3000'
+              listen: 'tcp://0.0.0.0:3000'
               rails_environment: 'production'
             privacy:
               statistics:
@@ -115,4 +115,73 @@ storage:
           production:
             environment:
               #redis: 'redis://production.example.org:6379'
+    - path: /etc/opt/diaspora/diaspora.toml
+      mode: 0644
+      overwrite: yes
+      contents: |
+          [configuration.environment]
+          url = "https://${diaspora_server_name}"
+          certificate_authorities = "/etc/ssl/certs/ca-certificates.crt"
+          redis = "redis://${redis_ip}"
+          require_ssl = true
+
+          [configuration.environment.sidekiq]
+          concurrency = 25
+
+          [configuration.environment.logging]
+          debug.sql = false
+          debug.federation = false
+
+          [configuration.server]
+          listen = "tcp://0.0.0.0:3000"
+          rails_environment = "production"
+          unicorn_worker = 4
+
+          [configuration.privacy.statistics]
+          user_counts = ${display_statistics}
+          post_counts = ${display_statistics}
+          comment_counts = ${display_statistics}
+
+          [configuration.settings]
+          enable_registrations = ${enable_registrations}
+          autofollow_on_join = ${autofollow_podmin}
+          autofollow_on_join_use = "${admin_account}@${diaspora_server_name}"
+          #liberapay_username =
+          export_concurrency = 2
+
+          [configuration.settings.welcome_message]
+          enabled: ${enable_welcome_message}
+          subject: "Welcome Message"
+          text: "Hello %%{username}, welcome to diaspora."
+
+          [configuration.settings.captcha]
+          captcha_length = 10
+          image_style = "simply_green"
+          distortion = "high"
+
+          [configuration.settings.terms]
+          enable = ${terms_enable}
+          jurisdiction = "${terms_jurisdication}"
+
+          [configuration.settings.maintenance]
+          remove_old_users.enable = ${remove_old_users}
+          remove_old_users.after_days = 365
+          remove_old_users.warn_days = 30
+
+          [configuration.mail]
+          enable = true
+          sender_address = "diaspora@${diaspora_server_name}"
+          method = "smtp"
+
+          [configuration.mail.smtp]
+          host = "${smtpd_ip}"
+          port = 25
+          authentication: "none"
+          domain = "${diaspora_server_name}"
+
+          [configuration.admins]
+          account = "${admin_account}"
+          podmin_email = "${admin_email}"
+
+          [production]
 ...
